@@ -3,6 +3,9 @@ fun add(a, b) {
   return a + b
 }
 
+var z = 4
+var d = add(2, z)
+
 fun main() {
     print ("Hello, world!", "A = ", a)
     x = (1+2) * 3

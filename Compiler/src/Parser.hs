@@ -1,5 +1,6 @@
 -- Structure inspired by https://wiki.haskell.org/Parsing_a_simple_imperative_language#Notes
-
+-- Right now we go for a dynamic language, because implementing static checks is quite a lot of work
+-- In some time I want to migrate to static typing, but now I want to quickly write a test lang.
 module Parser where
 import System.IO
 import Control.Monad
@@ -39,6 +40,7 @@ data Statement = Sequence [Statement]
                  deriving (Show)
 
 data Definition = Function String [String] Statement -- TODO possibly add types to arguments
+                | GlobalVar String Expression
                  deriving (Show)
 
 languageDef =
@@ -164,14 +166,23 @@ statement =  braces statement
 
 function :: Parser Definition
 function = do
-  _            <- reserved "fun"
-  functionName <- identifier
-  args <- parens (commaSep identifier)
-  body <- statement
-  return $ Function functionName args body
+    _            <- reserved "fun"
+    functionName <- identifier
+    args <- parens (commaSep identifier)
+    body <- statement
+    return $ Function functionName args body
+
+globalVariable :: Parser Definition
+globalVariable = do
+    _ <- reserved "var"
+    name <- identifier
+    _ <- reservedOp "="
+    value <- expression
+    return $ GlobalVar name value
 
 definition :: Parser Definition
-definition = function --TODO other types
+definition =  function
+          <|> globalVariable
 
 parseProgram :: String -> String -> [Definition]
 parseProgram code fname =
