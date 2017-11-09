@@ -13,7 +13,6 @@ printInLines (h:t) = do
 process :: String -> IO ()
 process filename = do
   contents <- readFile filename
-  --printInLines (Parser.parseProgram contents)
   let ast = Parser.parseProgram contents filename
   putStrLn $ compile ast
 

@@ -1,3 +1,4 @@
+var a1 = 2 * 3 + 4
 
 fun add(a, b) {
   return a + b
@@ -7,7 +8,7 @@ var z = 4
 var d = add(2, z)
 
 fun main() {
-    print ("Hello, world!", "A = ", a)
+    print ("Hello, world!\n", "A = ", a)
     x = (1+2) * 3
     if (x || y) {
       z = 4
