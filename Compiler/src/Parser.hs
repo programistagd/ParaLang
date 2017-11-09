@@ -80,15 +80,39 @@ expression = buildExpressionParser operators term
 assignStmt :: Parser Statement
 assignStmt =
   do var  <- identifier
-     void $ reservedOp "="
+     _    <- reservedOp "="
      expr <- expression
      return $ Assign var expr
 
+ifStmt :: Parser Statement
+ifStmt = do
+    _    <- reserved "if"
+    cond <- expression
+    stmt <- statement
+    return $ If cond stmt NoOp
+
+ifElseStmt :: Parser Statement
+ifElseStmt = do
+    _     <- reserved "if"
+    cond  <- expression
+    stmt1 <- statement
+    _     <- reserved "else"
+    stmt2 <- statement
+    return $ If cond stmt1 stmt2
+
+whileStmt :: Parser Statement
+whileStmt = do
+      _    <- reserved "while"
+      cond <- expression
+      _    <- reserved "do"
+      stmt <- statement
+      return $ While cond stmt
+
 statement' :: Parser Statement
-statement' =   {-ifStmt
+statement' =  try ifElseStmt
+          <|> ifStmt
           <|> whileStmt
-          <|> skipStmt
-          <|> -}assignStmt
+          <|> assignStmt
 
 sequenceOfStatements =
   do list <- many1 statement' --sepBy1 statement' semi
