@@ -9,21 +9,36 @@ import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
 
 data BinOp = Add
-             | Subtract
-             | Multiply
-             | Divide
-               deriving (Show)
+           | Subtract
+           | Multiply
+           | Divide
+           | Lt
+           | Gt
+           | Eq
+           | Leq
+           | Geq
+           | Neq
+           | And
+           | Or
+             deriving (Show)
 
 data Expression = Var String
                 | IntConst Integer
-                | BinaryOp BinOp Expression Expression
+                | StrConst String
+                | BinaryOp BinOp Expression Expression -- TODO Not?
+                | Call String [Expression]
                   deriving (Show)
 
 data Statement = Sequence [Statement]
                | Assign String Expression
                | If Expression Statement Statement
                | While Expression Statement
+               | Eval Expression
+               | Return Expression
                | NoOp
+                 deriving (Show)
+
+data Definition = Function String [String] Statement -- TODO possibly add types to arguments
                  deriving (Show)
 
 languageDef =
@@ -33,19 +48,14 @@ languageDef =
           , Token.identStart      = letter
           , Token.identLetter     = alphaNum
           , Token.reservedNames   = [ "if"
-                                    , "then"
                                     , "else"
                                     , "while"
-                                    , "do"
-                                    , "skip"
+                                    , "fun"
                                     , "true"
                                     , "false"
-                                    , "not"
-                                    , "and"
-                                    , "or"
                                     ]
           , Token.reservedOpNames = ["+", "-", "*", "/", "=", "=="
-                                    , "<", ">", "&&", "||", "!"
+                                    , "<", ">", "&&", "||", "<=", ">=", "!=", "!"
                                     ]
           }
 
@@ -62,17 +72,34 @@ braces     = Token.braces     lexer -- parses surrounding braces
 integer    = Token.integer    lexer -- parses an integer
 semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
+commaSep   = Token.commaSep   lexer -- parses zero or more lexemes separated by comma
+stringLiteral = Token.stringLiteral lexer -- parses a string literal
+
+functionCall :: Parser Expression
+functionCall = do
+    functionName <- identifier
+    args <- parens (commaSep expression)
+    return $ Call functionName args
 
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
                Infix  (reservedOp "/"   >> return (BinaryOp Divide  )) AssocLeft],
               [Infix  (reservedOp "+"   >> return (BinaryOp Add     )) AssocLeft,
-               Infix  (reservedOp "-"   >> return (BinaryOp Subtract)) AssocLeft]
+               Infix  (reservedOp "-"   >> return (BinaryOp Subtract)) AssocLeft],
+              [Infix  (reservedOp "<"   >> return (BinaryOp Lt      )) AssocLeft,
+               Infix  (reservedOp ">"   >> return (BinaryOp Gt      )) AssocLeft,
+               Infix  (reservedOp "=="   >> return (BinaryOp Eq     )) AssocLeft,
+               Infix  (reservedOp "<="   >> return (BinaryOp Leq    )) AssocLeft,
+               Infix  (reservedOp ">="   >> return (BinaryOp Geq    )) AssocLeft],
+              [Infix  (reservedOp "||"   >> return (BinaryOp Or     )) AssocLeft,
+               Infix  (reservedOp "&&"   >> return (BinaryOp And    )) AssocLeft]
             ]
 
 term =  parens expression
+    <|> try functionCall
     <|> fmap Var identifier
     <|> fmap IntConst integer
+    <|> fmap StrConst stringLiteral
 
 expression :: Parser Expression
 expression = buildExpressionParser operators term
@@ -102,17 +129,30 @@ ifElseStmt = do
 
 whileStmt :: Parser Statement
 whileStmt = do
-      _    <- reserved "while"
-      cond <- expression
-      _    <- reserved "do"
-      stmt <- statement
-      return $ While cond stmt
+    _    <- reserved "while"
+    cond <- expression
+    _    <- reserved "do"
+    stmt <- statement
+    return $ While cond stmt
+
+returnStmt :: Parser Statement
+returnStmt = do
+    _     <- reserved "return"
+    value <- expression
+    return $ Return value
+
+evalStmt :: Parser Statement
+evalStmt = do
+    expr <- expression
+    return $ Eval expr
 
 statement' :: Parser Statement
 statement' =  try ifElseStmt
           <|> ifStmt
           <|> whileStmt
-          <|> assignStmt
+          <|> returnStmt
+          <|> try assignStmt
+          <|> evalStmt
 
 sequenceOfStatements =
   do list <- many1 statement' --sepBy1 statement' semi
@@ -122,15 +162,19 @@ statement :: Parser Statement
 statement =  braces statement
          <|> sequenceOfStatements
 
-data Definition = Whatever
-                  deriving (Show)
+function :: Parser Definition
+function = do
+  _            <- reserved "fun"
+  functionName <- identifier
+  args <- parens (commaSep identifier)
+  body <- statement
+  return $ Function functionName args body
 
---parseProgram :: String -> [Definition]
---parseProgram code =
---  [Whatever]
+definition :: Parser Definition
+definition = function --TODO other types
 
-parseProgram :: String -> String -> Statement
+parseProgram :: String -> String -> [Definition]
 parseProgram code fname =
-  case parse ((whiteSpace >> statement) <* eof) fname code of
+  case parse ((whiteSpace >> many definition) <* eof) fname code of
     Left e -> error $ show e
     Right r -> r
