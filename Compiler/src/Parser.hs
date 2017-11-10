@@ -26,8 +26,11 @@ data BinOp = Add
 data Expression = Var String
                 | IntConst Integer
                 | StrConst String
-                | BinaryOp BinOp Expression Expression -- TODO Not?
+                | BinaryOp BinOp Expression Expression -- TODO Not and other unary?
                 | Call String [Expression]
+                | DotExpr Expression Expression -- TODO this is not the most beautiful way of handling structs etc.,
+                                                -- because it syntactically allows for calls like 2.b() or c().(2+1) which is stupid,
+                                                -- but it's very simple so for now I use it, later I might redo it
                   deriving (Show)
 
 data Statement = Sequence [Statement]
@@ -76,6 +79,8 @@ semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 commaSep   = Token.commaSep   lexer -- parses zero or more lexemes separated by comma
 stringLiteral = Token.stringLiteral lexer -- parses a string literal
+dot = Token.dot lexer -- parses a dot
+brackets = Token.brackets lexer -- parses brackets
 
 functionCall :: Parser Expression
 functionCall = do
@@ -84,6 +89,7 @@ functionCall = do
     return $ Call functionName args
 
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
+              [Infix  (dot              >> return (DotExpr)) AssocLeft          ],
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
                Infix  (reservedOp "/"   >> return (BinaryOp Divide  )) AssocLeft],
               [Infix  (reservedOp "+"   >> return (BinaryOp Add     )) AssocLeft,

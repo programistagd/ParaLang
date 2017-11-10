@@ -12,7 +12,9 @@
    seti value reg - loads integer value into register
    sets value reg - loads string value into register
    `BinOP` regA regB regR -> regR := regA OP regB
-   puts reg - put value from reg onto call-stack
+   puts str - put a string constant onto the stack
+   push reg - put value from reg onto the stack
+   pop reg - pop a value from the stack and put it into reg
    call reg - call a function from stack (gets its name and then all parameters from the stack) and put result into reg
 -}
 module Dynamic.DynamicCompiler where
@@ -51,13 +53,12 @@ compileExpression env expr = case expr of
                        (nenv, acode @@ bcode @@
                               show op %% show areg %% show breg %% show rreg, rreg)
     Call name args ->  let (aenv, acode, regs) = foldl addArg (env, "", []) args in
-                       let rcode = foldl (@@) acode (map (\reg -> "puts" %% show reg) regs) in
-                       let (env1, nreg) = regGetAnon aenv in
-                       let (nenv, rreg) = regGetAnon env1 in
+                       let rcode = foldl (@@) acode (map (\reg -> "push" %% show reg) regs) in
+                       let (nenv, rreg) = regGetAnon aenv in
                        (nenv, rcode @@
-                              "sets" %% name %% show nreg @@
-                              "puts" %% show nreg @@
+                              "puts" %% name @@
                               "call" %% show rreg, rreg)
+    DotExpr _ _ -> error (show expr ++ " currently not supported")
 
 loadArgs :: [String] -> (Registers, String)
 loadArgs args = (regEmpty, "(???)")

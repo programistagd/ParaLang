@@ -4,16 +4,20 @@ fun add(a, b) {
   return a + b
 }
 
+
+//var q = t.a()
 var z = 4
 var d = add(2, z)
 
 fun main() {
-    print ("Hello, world!\n", "A = ", a)
+    print ("Hello, world!\n", "A = ", a.compute())
     x = (1+2) * 3
     if (x || y) {
       z = 4
       print(add(2,x))
     }
+
+    q = b.do().at(3,2).to("hey")
 
     if y <= z {
       z = 4

@@ -1,8 +1,10 @@
 module Main where
 
 import System.Environment
+import System.IO
 import Parser
 import Dynamic.DynamicCompiler
+import Text.Show.Pretty
 
 printInLines :: Show a => [a] -> IO ()
 printInLines [] = return ()
@@ -14,6 +16,7 @@ process :: String -> IO ()
 process filename = do
   contents <- readFile filename
   let ast = Parser.parseProgram contents filename
+  hPutStrLn stderr (ppShow ast)
   putStrLn $ compile ast
 
 main :: IO ()
