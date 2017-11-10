@@ -8,6 +8,7 @@ fun add(a, b) {
 //var q = t.a()
 var z = 4
 var d = add(2, z)
+var s = "test"
 
 fun main() {
     print ("Hello, world!\n", "A = ", a.compute())
