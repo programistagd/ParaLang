@@ -20,7 +20,7 @@ languageDef =
           , Token.reservedNames   = [ "if"
                                     , "else"
                                     , "while"
-                                    , "fun"
+                                    , "func"
                                     , "true"
                                     , "false"
                                     ]
@@ -54,7 +54,7 @@ functionCall = do
     return $ Call functionName args
 
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
-              [Infix  (dot              >> return (DotExpr)) AssocLeft          ],
+              [Infix  (dot              >> return DotExpr) AssocLeft          ],
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
                Infix  (reservedOp "/"   >> return (BinaryOp Divide  )) AssocLeft],
               [Infix  (reservedOp "+"   >> return (BinaryOp Add     )) AssocLeft,
@@ -137,7 +137,7 @@ statement =  braces statement
 
 function :: Parser Definition
 function = do
-    _            <- reserved "fun"
+    _            <- reserved "func"
     functionName <- identifier
     args <- parens (commaSep identifier)
     body <- statement

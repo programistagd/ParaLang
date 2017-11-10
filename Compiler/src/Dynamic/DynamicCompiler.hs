@@ -13,22 +13,26 @@ import Dynamic.Environment
 
 (@@) :: String -> String -> String
 (@@) "" b = b
+(@@) a "" = a
 (@@) a b = a ++ "\n" ++ b
 
 (%%) :: String -> String -> String
 (%%) "" b = b
 (%%) a b = a ++ " " ++ b
 
+opCount :: String -> Int -- computes amount of operations in a snippet of machine code
+opCount code = length $ filter (=='\n') code
+
 --useReg :: Registers -> String -> String
 binaryOpName :: BinOp -> String
 binaryOpName = show -- TODO?
 
-exprPushArg :: (Registers, String, [Integer]) -> Expression -> (Registers, String, [Integer])
+exprPushArg :: (Registers, String, [Int]) -> Expression -> (Registers, String, [Int])
 exprPushArg (env, code, regs) expr =
     let (nenv, ncode, nreg) = compileExpression env expr
     in (nenv, code @@ ncode, nreg : regs)
 
-compileExpression :: Registers -> Expression -> (Registers, String, Integer)
+compileExpression :: Registers -> Expression -> (Registers, String, Int)
 compileExpression env expr = case expr of
     Var name -> (nenv, "load" %% name %% show reg, reg)
         where (nenv, reg) = regGetOrAdd env name
@@ -45,7 +49,7 @@ compileExpression env expr = case expr of
                        let rcode = foldl (@@) acode (map (\reg -> "push" %% show reg) regs) in
                        let (nenv, rreg) = regGetAnon aenv in
                        (nenv, rcode @@
-                              "puts" %% name @@
+                              "puts" %% name @@ --TODO put return address onto stack
                               "call" %% show rreg, rreg)
     DotExpr _ _ -> error (show expr ++ " currently not supported")
 
@@ -55,15 +59,35 @@ loadArg name = "pop 0" @@ "save 0" %% name
 loadArgs :: [String] -> String
 loadArgs args = foldl (@@) "" (map loadArg args)
 
-compileStatement :: Statement -> Registers -> String
-compileStatement stmt env = "{}"
+compileStatement :: Statement -> String
+compileStatement stmt = case stmt of
+   Sequence statements -> foldl (@@) "" (map compileStatement statements)
+   Assign name expr -> let (_, code, rreg) = compileExpression regEmpty expr in
+                       code @@ "save" %% show rreg %% name
+   If condition success failure -> let (env, ccode, creg) = compileExpression regEmpty condition in
+                              let scode = compileStatement success in
+                              let fcode = compileStatement failure in
+                              let slen = opCount scode in
+                              let flen = opCount fcode in
+                              let (_, jreg) = regGetAnon env in
+                              ccode @@ -- compute condition value
+                              "sets" %% show (slen + 3) %% show jreg @@
+                              "if" %% show creg %% show jreg @@ -- if condition is 0 (false) jumps to else
+                              scode @@ -- executed if no jump occured
+                              "sets" %% show (flen + 1) %% show jreg @@
+                              "jmp" %% show jreg @@ -- after success branch jump over failure branch
+                              fcode
+   While expr body -> "??"
+   Eval expr -> let (_, code, _) = compileExpression regEmpty expr in code
+   Return expr -> "??"
+   NoOp -> ""
 
 compileDef :: Definition -> String
 compileDef (Function name args body) =
-    "fun" %% name @@
+    "func" %% name @@
     loadArgs args @@
-    compileStatement body regEmpty @@
-    "endfun"
+    compileStatement body @@
+    "endfunc"
 compileDef (GlobalVar name value) =
     expr @@ "glob" %% name %% show reg
     where (_, expr, reg) = compileExpression regEmpty value

@@ -24,3 +24,5 @@ in free functions we check function scope and later global scope.
  - `push reg` - put value from reg onto the stack
  - `pop reg` - pop a value from the stack and put it into reg
  - `call reg` - call a function from stack (gets its name and then all parameters from the stack) and put result into reg
+ - `jmp reg` - sets current op pointer so that the next operation executed will be (current + value of reg); Warning: `jmp (0)` is an infinite loop
+ - `if reg amount` - if reg is equal to 0 acts like `jmp amount`, otherwise acts like a noop

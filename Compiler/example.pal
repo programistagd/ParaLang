@@ -1,6 +1,6 @@
 var a1 = 2 * 3 + 4
 
-fun add(a, b) {
+func add(a, b) {
   return a + b
 }
 
@@ -10,15 +10,15 @@ var z = 4
 var d = add(2, z)
 var s = "test"
 
-fun main() {
-    print ("Hello, world!\n", "A = ", a.compute())
+func main() {
+    print ("Hello, world!\n", "A = ", a)
     x = (1+2) * 3
     if (x || y) {
       z = 4
       print(add(2,x))
     }
 
-    q = b.do().at(3,2).to("hey")
+    //q = b.do().at(3,2).to("hey")
 
     if y <= z {
       z = 4
