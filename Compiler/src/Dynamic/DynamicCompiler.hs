@@ -77,9 +77,9 @@ compileStatement stmt = case stmt of
                               "sets" %% show (flen + 1) %% show jreg @@
                               "jmp" %% show jreg @@ -- after success branch jump over failure branch
                               fcode
-   While expr body -> "??"
+   While expr body -> "?While?"
    Eval expr -> let (_, code, _) = compileExpression regEmpty expr in code
-   Return expr -> "??"
+   Return expr -> "?Return?"
    NoOp -> ""
 
 compileDef :: Definition -> String

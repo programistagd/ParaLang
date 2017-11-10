@@ -104,7 +104,6 @@ whileStmt :: Parser Statement
 whileStmt = do
     _    <- reserved "while"
     cond <- expression
-    _    <- reserved "do"
     stmt <- statement
     return $ While cond stmt
 
