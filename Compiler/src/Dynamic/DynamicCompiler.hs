@@ -8,6 +8,7 @@
 module Dynamic.DynamicCompiler where
 
 import Parser
+import AST
 import Dynamic.Environment
 
 (@@) :: String -> String -> String
