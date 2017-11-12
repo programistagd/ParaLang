@@ -49,7 +49,7 @@ compileExpression env expr = case expr of
                        let rcode = foldl (@@) acode (map (\reg -> "push" %% show reg) regs) in
                        let (nenv, rreg) = regGetAnon aenv in
                        (nenv, rcode @@
-                              "puts" %% name @@ --TODO put return address onto stack
+                              "puts" %% name @@
                               "call" %% show rreg, rreg)
     DotExpr _ _ -> error (show expr ++ " currently not supported")
 
@@ -77,9 +77,20 @@ compileStatement stmt = case stmt of
                               "sets" %% show (flen + 1) %% show jreg @@
                               "jmp" %% show jreg @@ -- after success branch jump over failure branch
                               fcode
-   While expr body -> "?While?"
+   While condition body -> let (env, ccode, creg) = compileExpression regEmpty condition in
+                      let bcode = compileStatement body in
+                      let clen = opCount ccode in
+                      let blen = opCount bcode in
+                      let (_, jreg) = regGetAnon env in
+                      ccode @@
+                      "sets" %% show (blen + 1) %% show jreg @@
+                      "if" %% show creg %% show jreg @@
+                      bcode @@
+                      "sets" %% show (- (blen + 1 + 2 + clen)) %% show jreg @@
+                      "jmp" %% show jreg
    Eval expr -> let (_, code, _) = compileExpression regEmpty expr in code
-   Return expr -> "?Return?"
+   Return expr -> let (_, ecode, ereg) = compileExpression regEmpty expr in
+                  ecode @@ "retrn" %% show ereg
    NoOp -> ""
 
 compileDef :: Definition -> String
