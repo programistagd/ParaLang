@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+   fmt.Println("WARNING! This is work in progress.")
+
    var file = os.Stdin;
    if (len(os.Args) > 1) {
       if (!strings.HasPrefix(os.Args[1], "-")) {
