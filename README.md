@@ -10,6 +10,9 @@ Later, if I find time, I want to add static type checking etc.
 
 I might also use it to test other concepts in the future, or maybe someone else will want to fork it to test their ideas ;)
 
+## Docs:
+ - [Runtime VM specs](docs/Dynamic.md)
+ - The language has C-like syntax and is (currently) completely dynamic - there are no typechecks (YET) and variables can be allocated almost on the fly (I want to change that, as I don't like such dynamic languages, but I don't have enough time right now).
 
 ## Getting it to work
 
