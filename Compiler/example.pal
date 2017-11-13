@@ -1,36 +1,52 @@
+/*
+ * Test ParaLang code.
+ */
+
 var a1 = 2 * 3 + 4
 
 func add(a, b) {
   return a + b
 }
 
-
-//var q = t.a()
+//Test
 var z = 4
 var d = add(2, z)
 var s = "test"
 
+struct Test {
+    var x = 0
+    var y = 0
+    func move() {
+        x = x + 1
+    }
+}
+
+var test = Test()
+
+var tab = array(5)
+
 func main() {
-    print ("Hello, world!\n", "A = ", a)
+    print ("Hello, world!\n")
+    print(a)
     x = (1+2) * 3
-    if (x || y) {
+    if (x || z) {
       z = 4
       print(add(2,x))
     }
+    tab[0] = 1
+    test.move()
+    test.y = 4
+    print(test.x)
 
-    //q = b.do().at(3,2).to("hey")
-
-    if y <= z {
+    if (x <= z) {
       z = 4
-    } else if z {
-      b = 1
-      z = 4
+    } else if (z) {
+      z = 3
     } else {
       k = 2
     }
 
-
-    while(1) {
+    while(tab[0] == 1) {
       x = 1
     }
 }

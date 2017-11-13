@@ -2,8 +2,6 @@
 -- Right now we go for a dynamic language, because implementing static checks is quite a lot of work
 -- In some time I want to migrate to static typing, but now I want to quickly write a test lang.
 module Parser where
-import System.IO
-import Control.Monad
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Language
@@ -23,6 +21,7 @@ languageDef =
                                     , "func"
                                     , "true"
                                     , "false"
+                                    , "struct"
                                     ]
           , Token.reservedOpNames = ["+", "-", "*", "/", "=", "=="
                                     , "<", ">", "&&", "||", "<=", ">=", "!=", "!"
@@ -53,6 +52,13 @@ functionCall = do
     args <- parens (commaSep expression)
     return $ Call functionName args
 
+--TODO For now we can only access top level arrays, because of parser limitations, later I might do something about it
+arrayAccess :: Parser Expression
+arrayAccess = do
+    arrayName <- identifier
+    index <- brackets expression
+    return $ AccessArray (Var arrayName) index
+
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
               [Infix  (dot              >> return DotExpr) AssocLeft          ],
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
@@ -69,6 +75,7 @@ operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
             ]
 
 term =  parens expression
+    <|> try arrayAccess
     <|> try functionCall
     <|> fmap Var identifier
     <|> fmap IntConst integer
@@ -79,22 +86,22 @@ expression = buildExpressionParser operators term
 
 assignStmt :: Parser Statement
 assignStmt =
-  do var  <- identifier
+  do ref  <- expression
      _    <- reservedOp "="
      expr <- expression
-     return $ Assign var expr
+     return $ Assign ref expr
 
 ifStmt :: Parser Statement
 ifStmt = do
     _    <- reserved "if"
-    cond <- expression
+    cond <- parens expression
     stmt <- statement
     return $ If cond stmt NoOp
 
 ifElseStmt :: Parser Statement
 ifElseStmt = do
     _     <- reserved "if"
-    cond  <- expression
+    cond  <- parens expression
     stmt1 <- statement
     _     <- reserved "else"
     stmt2 <- statement
@@ -103,7 +110,7 @@ ifElseStmt = do
 whileStmt :: Parser Statement
 whileStmt = do
     _    <- reserved "while"
-    cond <- expression
+    cond <- parens expression
     stmt <- statement
     return $ While cond stmt
 
@@ -131,8 +138,8 @@ sequenceOfStatements =
      return $ if length list == 1 then head list else Sequence list
 
 statement :: Parser Statement
-statement =  braces statement
-         <|> sequenceOfStatements
+statement =  statement'
+         <|> braces sequenceOfStatements
 
 function :: Parser Definition
 function = do
@@ -150,9 +157,18 @@ globalVariable = do
     value <- expression
     return $ GlobalVar name value
 
+structure :: Parser Definition
+structure = do
+    _ <- reserved "struct"
+    name <- identifier
+    typename <- option "" identifier
+    defs <- braces $ many definition
+    return $ Structure name typename defs
+
 definition :: Parser Definition
 definition =  function
           <|> globalVariable
+          <|> structure
 
 parseProgram :: String -> String -> [Definition]
 parseProgram code fname =
