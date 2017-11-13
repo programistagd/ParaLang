@@ -11,7 +11,7 @@ data BinOp = Add
            | Neq
            | And
            | Or
-             deriving (Show)
+             deriving (Show, Eq)
 
 data Expression = Var String
                 | IntConst Integer
@@ -22,7 +22,7 @@ data Expression = Var String
                 | DotExpr Expression Expression -- TODO this is not the most beautiful way of handling structs etc.,
                                                 -- because it syntactically allows for calls like 2.b() or c().(2+1) which is stupid,
                                                 -- but it's very simple so for now I use it, later I might redo it
-                  deriving (Show)
+                  deriving (Show, Eq)
 
 data Statement = Sequence [Statement]
                | Assign Expression Expression
@@ -31,9 +31,9 @@ data Statement = Sequence [Statement]
                | Eval Expression
                | Return Expression
                | NoOp
-                 deriving (Show)
+                 deriving (Show, Eq)
 
 data Definition = Function String [String] Statement -- TODO possibly add types to arguments
                 | GlobalVar String Expression
                 | Structure String String [Definition]
-                 deriving (Show)
+                 deriving (Show, Eq)

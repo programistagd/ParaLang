@@ -1,0 +1,25 @@
+/*
+ * Test concurrency.
+ */
+
+/*struct Test monitor {
+    var x = 0
+    var y = 0
+    func move() {
+        x = x + 1
+    }
+}
+
+var test = Test()*/
+
+func process(id) {
+    print(id)
+}
+
+func main() {
+    i = 0
+    while(i < 20) {
+        launch(process(i))
+        i = i + 1
+    }
+}
