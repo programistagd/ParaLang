@@ -7,7 +7,6 @@
 -}
 module Dynamic.DynamicCompiler where
 
-import Parser
 import AST
 import Dynamic.Environment
 
@@ -53,6 +52,14 @@ compileExpressionValue env expr = case expr of
                        "puts" %% name @@
                        "call" %% show rreg,
                        rreg)
+    AccessArray arrexp indexp -> let (aenv, acode, areg) = compileExpressionValue env arrexp in
+                                 let (ienv, icode, ireg) = compileExpressionValue aenv indexp in
+                                 let (nenv, rreg) = regGetAnon ienv in
+                               (nenv,
+                               acode @@
+                               icode @@
+                               "loada" %% show areg %% show ireg %% show rreg,
+                               rreg)
     DotExpr left (Var name) -> let (lenv, lcode, lreg) = compileExpressionValue env left in
                                let (nenv, rreg) = regGetAnon lenv in
                                (nenv,
@@ -84,6 +91,11 @@ loadArgs args = foldl (@@) "" (map loadArg args)
 saveToRef :: Registers -> Expression -> Int -> String
 saveToRef env refexp reg = case refexp of
     Var name -> "save" %% show reg %% name
+    AccessArray (Var arrayName) indexexp -> let (ienv, icode, ireg) = compileExpressionValue env indexexp in
+                                            let (_, areg) = regGetAnon ienv in
+                                            icode @@
+                                            "load" %% arrayName %% show areg @@
+                                            "savea" %% show areg %% show ireg %% show reg
     DotExpr left right -> let (lenv, lcode, lreg) = compileExpressionValue env left in
                          lcode @@
                          "open" %% show lreg @@

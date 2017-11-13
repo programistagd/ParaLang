@@ -23,6 +23,8 @@ struct Test {
 
 var test = Test()
 
+var tab = array(5)
+
 func main() {
     print ("Hello, world!\n")
     print(a)
@@ -31,7 +33,7 @@ func main() {
       z = 4
       print(add(2,x))
     }
-
+    tab[0] = 1
     test.move()
     test.y = 4
     print(test.x)
@@ -44,7 +46,7 @@ func main() {
       k = 2
     }
 
-    while(1) {
+    while(tab[0] == 1) {
       x = 1
     }
 }

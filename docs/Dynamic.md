@@ -23,6 +23,8 @@ For struct 'xy' there is a global function 'xy' that is its constructor.
 ##Bytecode ref
  - `load name reg` - loads a variable to register `reg`
  - `save reg name` - saves register `reg` into a variable called name (if such variable exists at any scope it's updated, otherwise it's created at the most local scope)
+ - `loada areg ireg rreg` - loads element at index `ireg` from array referenced by `areg` into `rreg`
+ - `savea areg ireq vreg` - saves `vreg` into array `areg` at place `ireg` (array should be large enough!)
  - `seti value reg` - loads integer value into register
  - `sets value reg` - loads string value into register
  - `BinOP regA regB regR` -> regR := regA OP regB
