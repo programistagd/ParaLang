@@ -23,6 +23,7 @@ languageDef =
                                     , "func"
                                     , "true"
                                     , "false"
+                                    , "struct"
                                     ]
           , Token.reservedOpNames = ["+", "-", "*", "/", "=", "=="
                                     , "<", ">", "&&", "||", "<=", ">=", "!=", "!"
@@ -79,10 +80,10 @@ expression = buildExpressionParser operators term
 
 assignStmt :: Parser Statement
 assignStmt =
-  do var  <- identifier
+  do ref  <- expression
      _    <- reservedOp "="
      expr <- expression
-     return $ Assign var expr
+     return $ Assign ref expr
 
 ifStmt :: Parser Statement
 ifStmt = do
@@ -131,8 +132,8 @@ sequenceOfStatements =
      return $ if length list == 1 then head list else Sequence list
 
 statement :: Parser Statement
-statement =  braces statement
-         <|> sequenceOfStatements
+statement =  statement'
+         <|> braces sequenceOfStatements
 
 function :: Parser Definition
 function = do
@@ -150,9 +151,18 @@ globalVariable = do
     value <- expression
     return $ GlobalVar name value
 
+structure :: Parser Definition
+structure = do
+    _ <- reserved "struct"
+    name <- identifier
+    typename <- option "" identifier
+    defs <- braces $ many definition
+    return $ Structure name typename defs
+
 definition :: Parser Definition
 definition =  function
           <|> globalVariable
+          <|> structure
 
 parseProgram :: String -> String -> [Definition]
 parseProgram code fname =

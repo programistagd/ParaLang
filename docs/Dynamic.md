@@ -13,6 +13,12 @@ Lookups go from the most local scope to the most global.
 In global variable definitions, only global scope is accessible (so it is the most local),
 in free functions we check function scope and later global scope.
 
+##Function call convention
+The VM handles function calls and makes sure the caller context and function context are separated by managing open scopes and registers. In practice that means that interpreting a function call on a simple VM can just call an interpreting function recursively.
+
+##Structures
+The VM supports objects of simple 'struct' type, managing their memory and function calls.
+For struct 'xy' there is a global function 'xy' that is its constructor.
 
 ##Bytecode ref
  - `load name reg` - loads a variable to register `reg`
@@ -26,3 +32,5 @@ in free functions we check function scope and later global scope.
  - `call reg` - call a function from stack (gets its name and then all parameters from the stack) and put result into reg
  - `jmp reg` - sets current op pointer so that the next operation executed will be (current + value of reg); Warning: `jmp (0)` is an infinite loop
  - `if reg amount` - if reg is equal to 0 acts like `jmp amount`, otherwise acts like a noop
+ - `open objreg` - brings up objects scope as a temporary local scope
+ - `close` - closes the open scope

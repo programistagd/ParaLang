@@ -24,4 +24,4 @@ main = do
   args <- getArgs
   case args of
     fname:_ -> process fname
-    _ -> putStrLn "Please specify filename"
+    _ -> putStrLn "Please specify filename" 

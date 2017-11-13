@@ -24,7 +24,7 @@ data Expression = Var String
                   deriving (Show)
 
 data Statement = Sequence [Statement]
-               | Assign String Expression
+               | Assign Expression Expression
                | If Expression Statement Statement
                | While Expression Statement
                | Eval Expression
@@ -34,4 +34,5 @@ data Statement = Sequence [Statement]
 
 data Definition = Function String [String] Statement -- TODO possibly add types to arguments
                 | GlobalVar String Expression
+                | Structure String String [Definition]
                  deriving (Show)
