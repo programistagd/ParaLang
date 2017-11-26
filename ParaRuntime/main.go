@@ -1,37 +1,39 @@
 package main
 
 import (
-   "bufio"
-   "os"
-   "strings"
-   "fmt"
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
 )
 
 func main() {
-   fmt.Println("WARNING! This is work in progress.")
+	fmt.Println("WARNING! This is work in progress.")
 
-   var file = os.Stdin;
-   if (len(os.Args) > 1) {
-      if (!strings.HasPrefix(os.Args[1], "-")) {
-         f, err := os.Open(os.Args[1])
-         defer f.Close()
-         if err != nil {
-            panic(err)
-         }
-         file = f
-      }
-   }
+	var file = os.Stdin
+	if len(os.Args) > 1 {
+		if !strings.HasPrefix(os.Args[1], "-") {
+			f, err := os.Open(os.Args[1])
+			defer f.Close()
+			if err != nil {
+				panic(err)
+			}
+			file = f
+		}
+	}
 
-   reader := bufio.NewReader(file)
+	reader := bufio.NewReader(file)
+	ops := make([]string, 0)
 
-    for {
-        line, err := reader.ReadString('\n')
-        line = strings.TrimSpace(line)
+	for {
+		line, err := reader.ReadString('\n')
+		line = strings.TrimSpace(line)
 
-        if err != nil {
-            break
-        }
+		if err != nil {
+			break
+		}
 
-        fmt.Println(line)
-    }
+		ops = append(ops, line)
+		fmt.Println(line)
+	}
 }

@@ -1,0 +1,45 @@
+/*
+It's a concurrency problem.
+
+There's a library with N books and two reading rooms with K chairs each.
+The client goes to information, says what book he wants and gets directer to one room.
+If the room is full or the book is not available, then reads and releases the book and the chair.
+*/
+
+information = semaphore(1)
+chairs1 = semaphore(K)
+chairs2 = semaphore(K)
+books = array(N)
+
+func init() {
+    i = 0
+    while(i < N) {
+        books[i] = semaphore(1)
+    }
+}
+
+func selectReadingRoom() {
+    return random(0, 2)
+}
+
+func client() {
+    bookid = random(0, N)
+    P(information)
+    room = selectReadingRoom()
+    if (room == 0) {
+        roomsem = chairs1
+    } else {
+        roomsem = chairs2
+    }
+    V(information)
+
+    P(books[bookid]) // wait for book
+    P(roomsem) // wait for chair
+    read_book(bookid)
+    V(roomsem) // release chair
+    V(books[bookid]) //release book
+}
+
+func main() {
+    init()
+}
