@@ -37,7 +37,7 @@ compileExpressionValue env expr = case expr of
         where (nenv, reg) = regGetOrAdd env name
     IntConst x -> (nenv, "seti" %% show x %% show reg, reg)
         where (nenv, reg) = regGetAnon env
-    StrConst s -> (nenv, "sets" %% show s %% show reg, reg)
+    StrConst s -> (nenv, "sets" %% show reg %% show s, reg)
         where (nenv, reg) = regGetAnon env
     BinaryOp op a b -> let (aenv, acode, areg) = compileExpressionValue env a in
                        let (benv, bcode, breg) = compileExpressionValue aenv b in

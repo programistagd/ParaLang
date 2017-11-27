@@ -29,7 +29,7 @@ For struct 'xy' there is a global function 'xy' that is its constructor.
  - `loada areg ireg rreg` - loads element at index `ireg` from array referenced by `areg` into `rreg`
  - `savea areg ireq vreg` - saves `vreg` into array `areg` at place `ireg` (array should be large enough!)
  - `seti value reg` - loads integer value into register
- - `sets value reg` - loads string value into register
+ - `sets reg value` - loads string value into register (different order for easier parsing)
  - `BinOP regA regB regR` -> regR := regA OP regB
  - `puts str` - put a string constant onto the stack
  - `push reg` - put value from reg onto the stack

@@ -39,5 +39,6 @@ func main() {
 		fmt.Println(line)
 	}
 
-	vm.ParseFile(ops)
+	scope := vm.ParseFile(ops)
+	_ = scope //TODO CALL main
 }
