@@ -29,6 +29,7 @@ func ParseFile(lines []string) Scope {
 				_ = strukt //TODO FIXME implement struct constructor
 				return ValueNil()
 			}
+			i = j + 1
 		case "func":
 			name := parts[1]
 			j := i + 1
@@ -37,6 +38,7 @@ func ParseFile(lines []string) Scope {
 			}
 			fun := parseFunc(lines[i+1 : j])
 			scope.funs[name] = fun
+			i = j + 1
 		default:
 			Exec(&scope, &state, &stack, line)
 		}
