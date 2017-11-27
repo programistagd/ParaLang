@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/programistagd/ParaLang/ParaRuntime/vm"
 )
 
 func main() {
@@ -36,4 +38,6 @@ func main() {
 		ops = append(ops, line)
 		fmt.Println(line)
 	}
+
+	vm.ParseFile(ops)
 }

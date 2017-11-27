@@ -23,21 +23,24 @@ func selectReadingRoom() {
 }
 
 func client() {
-    bookid = random(0, N)
-    P(information)
-    room = selectReadingRoom()
-    if (room == 0) {
-        roomsem = chairs1
-    } else {
-        roomsem = chairs2
-    }
-    V(information)
+    while(true) {
+        local_section()
+        bookid = random(0, N)
+        P(information)
+        room = selectReadingRoom()
+        if (room == 0) {
+            roomsem = chairs1
+        } else {
+            roomsem = chairs2
+        }
+        V(information)
 
-    P(books[bookid]) // wait for book
-    P(roomsem) // wait for chair
-    read_book(bookid)
-    V(roomsem) // release chair
-    V(books[bookid]) //release book
+        P(books[bookid]) // wait for book
+        P(roomsem) // wait for chair
+        read_book(bookid)
+        V(roomsem) // release chair
+        V(books[bookid]) //release book
+    }
 }
 
 func main() {

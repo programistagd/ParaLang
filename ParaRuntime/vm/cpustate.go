@@ -3,11 +3,17 @@ package vm
 /*
 TODO
 */
-type Scope map[string]PValue
+type Scope struct {
+	local  map[string]PValue
+	funs   map[string]PFunc
+	parent *Scope
+}
 
 /*
 TODO
 */
-type StackState struct {
+type CPUState struct {
 	registers [100]PValue //TODO autoresizing
+	stack     []PValue
+	opCount   int
 }
