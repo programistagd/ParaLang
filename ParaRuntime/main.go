@@ -23,6 +23,7 @@ func main() {
    }
 
    reader := bufio.NewReader(file)
+   ops := make([]string, 0)
 
     for {
         line, err := reader.ReadString('\n')
@@ -32,6 +33,7 @@ func main() {
             break
         }
 
+        ops = append(ops, line)
         fmt.Println(line)
     }
 }
