@@ -7,6 +7,8 @@ import Parser
 import Text.Show.Pretty
 import AST
 import Substitution
+import Simplify
+import TargetSQL
 
 printInLines :: Show a => [a] -> IO ()
 printInLines [] = return ()
@@ -22,9 +24,9 @@ process filename = do
   hPutStrLn stderr (ppShow ast);
   let subbed = Substitution.substitute ast;
   hPutStrLn stderr (ppShow subbed);
-  -- do
-  --   hPutStrLn stderr modmsg;
-  --   putStrLn $ compile modast
+  let simpl = Simplify.simplify subbed
+  hPutStrLn stderr (ppShow simpl);
+  hPutStrLn stdout (TargetSQL.compile simpl)
 
 main :: IO ()
 main = do

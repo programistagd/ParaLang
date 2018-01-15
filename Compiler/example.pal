@@ -1,11 +1,7 @@
-/*
- * Test ParaLang code.
- */
-
 a = 6378.137
 invf = 298.257223563
 f = 1.0 / invf
 
-func cx(x, y) = a * x
+func cx(x, y) = a * x + invf * a / f
 
-func cy(x, y) = a * x + y / f
+func cy(x, y) = a * x + y / sinh(f)

@@ -19,7 +19,13 @@ extractFunctions stmts =
      ) [] stmts)
 
 sub :: Map String Expression -> Expression -> Expression
-sub vars e = e
+sub vars e = case e of
+    Var name -> case Map.lookup name vars of
+        Just expr -> sub vars expr
+        Nothing -> e
+    Const _ -> e
+    BinaryOp op e1 e2 -> BinaryOp op (sub vars e1) (sub vars e2)
+    Call name exprs -> Call name (map (sub vars) exprs)
 
 verify :: [String] -> Expression -> Expression
 verify args expr = case expr of

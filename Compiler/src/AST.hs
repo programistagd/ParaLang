@@ -3,7 +3,14 @@ data BinOp = Add
            | Subtract
            | Multiply
            | Divide
-             deriving (Show, Eq)
+             deriving (Eq)
+
+instance Show BinOp where
+  show op = case op of
+    Add -> "+"
+    Subtract -> "-"
+    Multiply -> "*"
+    Divide -> "/"
 
 data Expression = Var String
                 | Const Double
