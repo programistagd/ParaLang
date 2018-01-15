@@ -51,9 +51,10 @@ executable ParaCompiler
   main-is:             Main.hs
 
   -- Modules included in this executable, other than Main.
-  other-modules:       Parser, AST,
-                       Dynamic.DynamicCompiler,
-                       Dynamic.Environment
+  other-modules:       Parser, AST 
+  --,
+                       --Dynamic.DynamicCompiler,
+                       --Dynamic.Environment
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
@@ -61,7 +62,8 @@ executable ParaCompiler
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.9,
                        parsec >= 3.1,
-                       pretty-show >= 1.6
+                       pretty-show >= 1.6,
+                       containers >= 0.5
   --                       stringbuilder >= 0.5.0
 
   -- Directories containing source files.

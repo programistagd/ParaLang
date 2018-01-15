@@ -15,17 +15,8 @@ languageDef =
           , Token.commentLine     = "//"
           , Token.identStart      = letter
           , Token.identLetter     = alphaNum
-          , Token.reservedNames   = [ "if"
-                                    , "else"
-                                    , "while"
-                                    , "func"
-                                    , "true"
-                                    , "false"
-                                    , "struct"
-                                    ]
-          , Token.reservedOpNames = ["+", "-", "*", "/", "=", "=="
-                                    , "<", ">", "&&", "||", "<=", ">=", "!=", "!"
-                                    ]
+          , Token.reservedNames   = ["func"]
+          , Token.reservedOpNames = ["+", "-", "*", "/", "="]
           }
 
 lexer = Token.makeTokenParser languageDef
@@ -38,13 +29,14 @@ parens     = Token.parens     lexer -- parses surrounding parenthesis:
                                     -- takes care of the parenthesis and
                                     -- uses p to parse what's inside them
 braces     = Token.braces     lexer -- parses surrounding braces
-integer    = Token.integer    lexer -- parses an integer
+--integer    = Token.integer    lexer -- parses an integer
+float      = Token.float      lexer
 semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 commaSep   = Token.commaSep   lexer -- parses zero or more lexemes separated by comma
-stringLiteral = Token.stringLiteral lexer -- parses a string literal
-dot = Token.dot lexer -- parses a dot
-brackets = Token.brackets lexer -- parses brackets
+-- stringLiteral = Token.stringLiteral lexer -- parses a string literal
+-- dot = Token.dot lexer -- parses a dot
+-- brackets = Token.brackets lexer -- parses brackets
 
 functionCall :: Parser Expression
 functionCall = do
@@ -52,126 +44,43 @@ functionCall = do
     args <- parens (commaSep expression)
     return $ Call functionName args
 
---TODO For now we can only access top level arrays, because of parser limitations, later I might do something about it
-arrayAccess :: Parser Expression
-arrayAccess = do
-    arrayName <- identifier
-    index <- brackets expression
-    return $ AccessArray (Var arrayName) index
-
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
-              [Infix  (dot              >> return DotExpr) AssocLeft          ],
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
                Infix  (reservedOp "/"   >> return (BinaryOp Divide  )) AssocLeft],
               [Infix  (reservedOp "+"   >> return (BinaryOp Add     )) AssocLeft,
-               Infix  (reservedOp "-"   >> return (BinaryOp Subtract)) AssocLeft],
-              [Infix  (reservedOp "<"   >> return (BinaryOp Lt      )) AssocLeft,
-               Infix  (reservedOp ">"   >> return (BinaryOp Gt      )) AssocLeft,
-               Infix  (reservedOp "=="   >> return (BinaryOp Eq     )) AssocLeft,
-               Infix  (reservedOp "<="   >> return (BinaryOp Leq    )) AssocLeft,
-               Infix  (reservedOp ">="   >> return (BinaryOp Geq    )) AssocLeft],
-              [Infix  (reservedOp "||"   >> return (BinaryOp Or     )) AssocLeft,
-               Infix  (reservedOp "&&"   >> return (BinaryOp And    )) AssocLeft]
+               Infix  (reservedOp "-"   >> return (BinaryOp Subtract)) AssocLeft]
             ]
 
 term =  parens expression
-    <|> try arrayAccess
     <|> try functionCall
     <|> fmap Var identifier
-    <|> fmap IntConst integer
-    <|> fmap StrConst stringLiteral
+    <|> fmap Const float
 
 expression :: Parser Expression
 expression = buildExpressionParser operators term
 
 assignStmt :: Parser Statement
-assignStmt =
-  do ref  <- expression
-     _    <- reservedOp "="
-     expr <- expression
-     return $ Assign ref expr
-
-ifStmt :: Parser Statement
-ifStmt = do
-    _    <- reserved "if"
-    cond <- parens expression
-    stmt <- statement
-    return $ If cond stmt NoOp
-
-ifElseStmt :: Parser Statement
-ifElseStmt = do
-    _     <- reserved "if"
-    cond  <- parens expression
-    stmt1 <- statement
-    _     <- reserved "else"
-    stmt2 <- statement
-    return $ If cond stmt1 stmt2
-
-whileStmt :: Parser Statement
-whileStmt = do
-    _    <- reserved "while"
-    cond <- parens expression
-    stmt <- statement
-    return $ While cond stmt
-
-returnStmt :: Parser Statement
-returnStmt = do
-    _     <- reserved "return"
-    value <- expression
-    return $ Return value
-
-evalStmt :: Parser Statement
-evalStmt = do
+assignStmt = do 
+    ref  <- identifier
+    _    <- reservedOp "="
     expr <- expression
-    return $ Eval expr
+    return $ Assign ref expr
 
-statement' :: Parser Statement
-statement' =  try ifElseStmt
-          <|> ifStmt
-          <|> whileStmt
-          <|> returnStmt
-          <|> try assignStmt
-          <|> evalStmt
-
-sequenceOfStatements =
-  do list <- many1 statement' --sepBy1 statement' semi
-     return $ if length list == 1 then head list else Sequence list
+funcStmt :: Parser Statement
+funcStmt = do
+    _     <- reserved "func"
+    name <- identifier
+    args <- parens (commaSep identifier)
+    _     <- reservedOp "="
+    body <- expression
+    return $ Function name args body
 
 statement :: Parser Statement
-statement =  statement'
-         <|> braces sequenceOfStatements
+statement =  try assignStmt
+          <|> funcStmt
 
-function :: Parser Definition
-function = do
-    _            <- reserved "func"
-    functionName <- identifier
-    args <- parens (commaSep identifier)
-    body <- statement
-    return $ Function functionName args body
-
-globalVariable :: Parser Definition
-globalVariable = do
-    _ <- reserved "var"
-    name <- identifier
-    _ <- reservedOp "="
-    value <- expression
-    return $ GlobalVar name value
-
-structure :: Parser Definition
-structure = do
-    _ <- reserved "struct"
-    name <- identifier
-    typename <- option "" identifier
-    defs <- braces $ many definition
-    return $ Structure name typename defs
-
-definition :: Parser Definition
-definition =  function
-          <|> globalVariable
-          <|> structure
-
-parseProgram :: String -> String -> [Definition]
+parseProgram :: String -> String -> [Statement]
 parseProgram code fname =
-  case parse ((whiteSpace >> many definition) <* eof) fname code of
+  case parse ((whiteSpace >> many statement) <* eof) fname code of
     Left e -> error $ show e
     Right r -> r
