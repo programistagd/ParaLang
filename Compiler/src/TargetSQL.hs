@@ -19,7 +19,7 @@ compileExpr expr = case expr of
 compileFun :: Fun -> String
 compileFun (name, args, body) = 
     let arglist = intercalate ", " (map (\n -> n ++ " FLOAT64") args) in
-    "CREATE TEMPORARY FUNCTION " ++ name ++ "(" ++ arglist ++ ") AS " ++ (compileExpr body) ++ ";"
+    "CREATE TEMPORARY FUNCTION " ++ name ++ "(" ++ arglist ++ ") AS (" ++ (compileExpr body) ++ ");"
 
 compile :: [Fun] -> String
 compile funs = 
