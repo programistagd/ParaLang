@@ -29,7 +29,7 @@ sub vars e = case e of
 
 verify :: [String] -> Expression -> Expression
 verify args expr = case expr of
-    Var str -> if elem str args then expr else error "Not all vars bound!"
+    Var str -> if elem str args then expr else error ("Variable " ++ str ++ " is neither an argument nor defined as an equation.")
     Const _ -> expr
     BinaryOp op e1 e2 -> BinaryOp op (verify args e1) (verify args e2)
     Call name exprs -> Call name (map (verify args) exprs)

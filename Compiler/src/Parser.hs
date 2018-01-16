@@ -70,6 +70,7 @@ assignStmt = do
     ref  <- identifier
     _    <- reservedOp "="
     expr <- expression
+    _ <- optional semi
     return $ Assign ref expr
 
 funcStmt :: Parser Statement
@@ -79,6 +80,7 @@ funcStmt = do
     args <- parens (commaSep identifier)
     _     <- reservedOp "="
     body <- expression
+    _ <- optional semi
     return $ Function name args body
 
 statement :: Parser Statement
