@@ -24,6 +24,6 @@ compileFun (name, args, body) =
     let arglist = intercalate ", " (map (\n -> n ++ " FLOAT64") args) in
     "CREATE TEMPORARY FUNCTION " ++ name ++ "(" ++ arglist ++ ") AS (" ++ (compileExpr body) ++ ");"
 
-compile :: [Fun] -> String
-compile funs = 
+compileSQL :: [Fun] -> String
+compileSQL funs = 
     intercalate "\n" (map compileFun funs)

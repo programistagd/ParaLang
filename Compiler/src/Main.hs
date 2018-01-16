@@ -9,6 +9,7 @@ import AST
 import Substitution
 import Simplify
 import TargetSQL
+import TargetLaTeX
 
 printInLines :: Show a => [a] -> IO ()
 printInLines [] = return ()
@@ -20,13 +21,14 @@ process :: String -> IO ()
 process filename = do
   contents <- readFile filename;
   let ast = Parser.parseProgram contents filename;
-  hPutStrLn stderr "Parsed AST:";
-  hPutStrLn stderr (ppShow ast);
+  --hPutStrLn stderr "Parsed AST:";
+  --hPutStrLn stderr (ppShow ast);
   let subbed = Substitution.substitute ast;
-  hPutStrLn stderr (ppShow subbed);
+  --hPutStrLn stderr (ppShow subbed);
   let simpl = Simplify.simplify subbed
-  hPutStrLn stderr (ppShow simpl);
-  hPutStrLn stdout (TargetSQL.compile simpl)
+  --hPutStrLn stderr (ppShow simpl);
+  hPutStrLn stderr (TargetLaTeX.compileLaTeX ast);
+  hPutStrLn stdout (TargetSQL.compileSQL simpl)
 
 main :: IO ()
 main = do
