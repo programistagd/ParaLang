@@ -7,11 +7,12 @@ compute op a b = case op of
     Subtract -> a - b
     Multiply -> a * b
     Divide -> a / b
+    Exp -> a ** b
 
 simpl :: Expression -> Expression
 simpl e = case e of
-    Var str -> e
-    Const x -> e
+    Var _ -> e
+    Const _ -> e
     BinaryOp op e1 e2 -> 
         let s1 = simpl e1 in
         let s2 = simpl e2 in

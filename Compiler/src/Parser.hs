@@ -16,7 +16,7 @@ languageDef =
           , Token.identStart      = letter
           , Token.identLetter     = alphaNum
           , Token.reservedNames   = ["func"]
-          , Token.reservedOpNames = ["+", "-", "*", "/", "="]
+          , Token.reservedOpNames = ["+", "-", "*", "/", "^", "="]
           }
 
 lexer = Token.makeTokenParser languageDef
@@ -30,7 +30,7 @@ parens     = Token.parens     lexer -- parses surrounding parenthesis:
                                     -- uses p to parse what's inside them
 braces     = Token.braces     lexer -- parses surrounding braces
 --integer    = Token.integer    lexer -- parses an integer
-float      = Token.float      lexer
+naturalOrFloat = Token.naturalOrFloat      lexer
 semi       = Token.semi       lexer -- parses a semicolon
 whiteSpace = Token.whiteSpace lexer -- parses whitespace
 commaSep   = Token.commaSep   lexer -- parses zero or more lexemes separated by comma
@@ -45,16 +45,22 @@ functionCall = do
     return $ Call functionName args
 
 operators = [ {-[Prefix (reservedOp "-"   >> return (Neg             ))],-}
+              [Infix  (reservedOp "^"   >> return (BinaryOp Exp)) AssocLeft],
               [Infix  (reservedOp "*"   >> return (BinaryOp Multiply)) AssocLeft,
                Infix  (reservedOp "/"   >> return (BinaryOp Divide  )) AssocLeft],
               [Infix  (reservedOp "+"   >> return (BinaryOp Add     )) AssocLeft,
                Infix  (reservedOp "-"   >> return (BinaryOp Subtract)) AssocLeft]
             ]
 
+constant :: Either Integer Double -> Expression
+constant e = case e of
+    Left x -> Const (fromIntegral x)
+    Right x -> Const x
+
 term =  parens expression
     <|> try functionCall
     <|> fmap Var identifier
-    <|> fmap Const float
+    <|> fmap constant naturalOrFloat
 
 expression :: Parser Expression
 expression = buildExpressionParser operators term

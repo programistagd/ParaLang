@@ -8,12 +8,15 @@ compileOp op = case op of
     Subtract -> "-"
     Multiply -> "*"
     Divide -> "/"
+    Exp -> fail "Special case replace with function"
 
 compileExpr :: Expression -> String
 compileExpr expr = case expr of
     Var str -> str
     Const x -> show x
-    BinaryOp op e1 e2 -> "(" ++ (compileExpr e1) ++ ")" ++ (compileOp op) ++ "(" ++ (compileExpr e2) ++ ")"
+    BinaryOp op e1 e2 -> case op of
+        Exp -> compileExpr (Call "POW" [e1, e2])
+        _ -> "(" ++ (compileExpr e1) ++ ")" ++ (compileOp op) ++ "(" ++ (compileExpr e2) ++ ")"
     Call name exprs -> name ++ "(" ++ (intercalate "," (map compileExpr exprs)) ++ ")"
 
 compileFun :: Fun -> String
