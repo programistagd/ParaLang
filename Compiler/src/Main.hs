@@ -7,6 +7,8 @@ import Dynamic.DynamicCompiler
 import Text.Show.Pretty
 import qualified Mods.Concurrency
 import AST
+import Interpreter
+import Data.Map as M
 
 usedModifications :: [[Definition] -> [Definition]]
 usedModifications = [Mods.Concurrency.modify]
@@ -23,11 +25,13 @@ process filename = do
   let ast = Parser.parseProgram contents filename
   hPutStrLn stderr "Parsed AST:";
   hPutStrLn stderr (ppShow ast);
-  let modast = foldl (\ast modder -> modder ast) ast usedModifications in
+  let modast = Prelude.foldl (\ast modder -> modder ast) ast usedModifications in
     let modmsg = if ast == modast then "No modifications detected." else "Modded AST:\n" ++ ppShow modast in
     do
       hPutStrLn stderr modmsg;
-      putStrLn $ compile modast
+      -- putStrLn $ compile modast
+      let env = parseDefinitions initialEnv modast
+      callFunction "print" env >>= print
 
 main :: IO ()
 main = do

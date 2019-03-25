@@ -1,0 +1,28 @@
+/*
+ * Test ParaLang code.
+ */
+
+var a1 = 2 * 3 + 4
+
+func add(a, b) {
+  return a + b
+}
+
+
+func main() {
+    print ("Hello, world!\n")
+    print(a)
+    x = (1+2) * 3
+    if (x || z) {
+      z = 4
+      print(add(2,x))
+    }
+
+    if (x <= z) {
+      z = 4
+    } else if (z) {
+      z = 3
+    } else {
+      k = 2
+    }
+}
